@@ -1,6 +1,6 @@
 import 'dotenv/config'
 
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { readDir, readFile } from './utils/fs.js';
 import { FileInfo, EpisodesCollection } from './utils/fileInfo.js';
 
@@ -8,6 +8,7 @@ const DIRECTORYPATH = process.env.DIRECTORYPATH || './data';
 const VIDEO_FILE_RE = new RegExp(process.env.VIDEO_FILE_RE || /\.webm$/);
 const SHOW_NAME = process.env.SHOW_NAME || 'Ross\'s Game Dungeon';
 const PLAYLIST_FILE_NAME = process.env.PLAYLIST_FILE_NAME || 'playlist';
+const PLAYLIST_URL = process.env.PLAYLIST_URL || 'https://www.youtube.com/playlist?list=PL6PNZBb6b9Ltgl6WM5rn2pjrXd_qdit2S';
 
 async function execAsync(command) {
     return new Promise((resolve, reject) => {
@@ -17,6 +18,18 @@ async function execAsync(command) {
             } else {
                 resolve({ stdout, stderr });
             }
+        });
+    });
+}
+
+async function spawnAsync(command, args, options) {
+    return new Promise((resolve, reject) => {
+        const child = spawn(command, args, options);
+        child.on('error', (error) => {
+            reject(error);
+        });
+        child.on('close', (code) => {
+            resolve(code);
         });
     });
 }
@@ -51,11 +64,27 @@ async function downloadPlaylistInfo(playlistUrl) {
     const { stdout, stderr } = await execAsync(command);
     if (stderr) {
         console.error('Error downloading playlist info:', stderr);
+        return null;
     }
-    const playlistInfo = JSON.parse(stdout);
+    let playlistInfo;
+    try {
+        playlistInfo = JSON.parse(stdout);
+    } catch (error) {
+        console.error('Error parsing playlist info:', error);
+        playlistInfo = null;
+    }
     return playlistInfo;
 }
 
+async function processPlaylist(playlistUrl) {
+    const playlistInfo = await downloadPlaylistInfo(playlistUrl);
+    if (!playlistInfo || !playlistInfo.entries || !playlistInfo.entries.length) {
+        console.error('No playlist entries found.');
+        return [];
+    }
+    const playlistEntries = playlistInfo.entries;
+    return playlistEntries;
+}
 
 async function main(directoryPath) {
     const episodesCollection = await createEpisodesCollection(directoryPath, VIDEO_FILE_RE, SHOW_NAME);
@@ -72,14 +101,20 @@ async function main(directoryPath) {
     }
     
     // download playlist info from youtube
-    const playlistUrl = 'https://www.youtube.com/playlist?list=PL6PNZBb6b9Ltgl6WM5rn2pjrXd_qdit2S';
-    const playlistInfo = await downloadPlaylistInfo(playlistUrl);
-    // console.log(playlistInfo.entries);
-    if (!playlistInfo || !playlistInfo.entries || !playlistInfo.entries.length) {
-        console.error('No playlist entries found.');
-        return;
+    const playlistEntries = await processPlaylist(PLAYLIST_URL);
+    for (const playlistEntry of playlistEntries) {
+        const episodeExists = episodesCollection.checkIfYtIdExists(playlistEntry.id);
+        if (episodeExists) {
+            continue;
+        } else {
+            console.log(`Episode with id ${playlistEntry.id} not found.`);
+            // download episode in 480p
+            const command = `yt-dlp -S "res:480" ${playlistEntry.url}`;
+            // Run the command using child_process in the directory where the files are
+            
+
+        }
     }
-    const playlistEntries = playlistInfo.entries;
 
 }
 
