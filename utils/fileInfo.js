@@ -3,6 +3,7 @@ const SERIES_REGEX = /\((\d+)\s*of\s*(\d+)\)/;
 export class FileInfo {
     constructor({ fileName, showName }) {
         this.file_name = fileName;
+        this.ext = fileName.split('.').pop();
         this.yt_id = this.parseYoutubeId(fileName);
         this.game_name = this.parseGameName(fileName);
         this.show_name = showName;
@@ -10,6 +11,7 @@ export class FileInfo {
         if (this.is_part_of_series) {
             this.series_name = this.trimSeriesMarkup(this.game_name);
             this.number_in_series = this.getNumberInSeries(this.game_name);
+            this.total_episodes_in_series = this.getTotalEpisodesInSeries(this.game_name);
             this.game_name = this.series_name;
         }
     }
@@ -21,14 +23,29 @@ export class FileInfo {
         return match ? match[1] : null;
     }
 
+    formattedFileName() {
+        let formattedFileName = `${this.show_name} - ${this.game_name}`;
+        if (this.is_part_of_series) {
+            formattedFileName += ` (${this.number_in_series} of ${this.total_episodes_in_series})`;
+        }
+        formattedFileName += ` [${this.yt_id}]`;
+        formattedFileName += `.${this.ext}`;
+        return formattedFileName;
+    }
+
     getNumberInSeries(gameName) {
         const match = gameName.match(SERIES_REGEX);
         return match ? parseInt(match[1]) : null;
     }
 
+    getTotalEpisodesInSeries(gameName) {
+        const match = gameName.match(SERIES_REGEX);
+        return match ? parseInt(match[2]) : null;
+    }
+    
     parseGameName(fileName) {
         // file name example: Ross's Game Dungeon - A New Beginning [G4bJqpVH0O0].webm
-        const regex = /(?:-|–)\s*(.*?)\s*\[/;
+        const regex = /(?:-|–|：|:)\s*(.*?)\s*\[/;
         const match = fileName.match(regex);
         let gameName = match ? match[1] : null;
 
