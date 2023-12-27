@@ -1,4 +1,4 @@
-FROM node:latest-alpine
+FROM node:21-alpine
 
 # Install curl
 RUN apk add --no-cache curl
@@ -10,3 +10,10 @@ RUN chmod a+rx /usr/local/bin/yt-dlp
 # Install ffmpeg
 RUN apk add --no-cache ffmpeg
 
+ADD . /app
+
+WORKDIR /app
+
+RUN yarn
+
+CMD ["yarn", "start"]
