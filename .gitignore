@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+
+# Optional npm cache directory
+.npm
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Testing
+coverage/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.komodoproject
+.komodotools/
+.kate-swp/
+*.swp
+*.swo
+*.tmproj
+*.tmproject
+*.tmtags
+*.tmp
+*.bak
+*.bak.*
+*~.nib/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
