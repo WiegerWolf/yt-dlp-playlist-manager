@@ -46,3 +46,21 @@ export class FileInfo {
         return gameName.replace(SERIES_REGEX, '').trim();
     }
 }
+
+export class EpisodesCollection {
+    constructor(fileInfos) {
+        this.items = fileInfos || [];
+    }
+
+    addItem(fileInfo) {
+        this.items.push(fileInfo);
+    }
+
+    getItemsByGameName(gameName) {
+        return this.items.filter((item) => item.game_name === gameName);
+    }
+
+    getItemsByYtId(ytId) {
+        return this.items.filter((item) => item.yt_id === ytId);
+    }
+}

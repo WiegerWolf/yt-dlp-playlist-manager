@@ -13,11 +13,10 @@ export async function readDir(directoryPath) {
     let files;
     try {
         files = await fs.readdir(directoryPath);
-        console.log(`Files in directory ${directoryPath}:`);
     } catch (err) {
         // handle ENOENT error: file or directory does not exist
         if (err.code === 'ENOENT') {
-            console.log(`Directory ${directoryPath} does not exist.`);
+            console.log(`Directory ${directoryPath} does not exist. Creating...`);
             await createDirectory(directoryPath);
             return readDir(directoryPath);
         } else {

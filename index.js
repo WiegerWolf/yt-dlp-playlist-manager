@@ -1,7 +1,7 @@
 import 'dotenv/config'
 
 import { readDir } from './utils/fs.js';
-import { FileInfo } from './utils/fileInfo.js';
+import { FileInfo, EpisodesCollection } from './utils/fileInfo.js';
 
 const DIRECTORYPATH = process.env.DIRECTORYPATH || './data';
 const VIDEO_FILE_RE = new RegExp(process.env.VIDEO_FILE_RE || /\.webm$/);
@@ -15,7 +15,8 @@ async function main(directoryPath) {
     const fileInfos = files
         .filter((fileName) => VIDEO_FILE_RE.test(fileName))
         .map((fileName) => new FileInfo({fileName, showName: SHOW_NAME}));
-    console.log(fileInfos);
+    const episodesCollection = new EpisodesCollection(fileInfos);
+    console.log(episodesCollection.getItemsByGameName('Still Life'));
 }
 
 
