@@ -10,6 +10,9 @@ RUN chmod a+rx /usr/local/bin/yt-dlp
 # Install ffmpeg
 RUN apk add --no-cache ffmpeg
 
+# Install python3
+RUN apk add --no-cache python3
+
 ADD . /app
 
 WORKDIR /app
