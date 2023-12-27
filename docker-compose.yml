@@ -7,3 +7,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - /home/n/share/Videos/YouTube/accursedfarms/GameDungeon:/app/data
+    env_file:
+      - .env
