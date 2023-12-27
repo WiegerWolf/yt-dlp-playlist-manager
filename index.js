@@ -19,18 +19,23 @@ async function createEpisodesCollection(directoryPath, videoFileRe, showName) {
     return new EpisodesCollection(fileInfos);
 }
 
-async function main(directoryPath) {
-    const episodesCollection = await createEpisodesCollection(directoryPath, VIDEO_FILE_RE, SHOW_NAME);
-    
-    const playlist = await readFile(`${directoryPath}/${PLAYLIST_FILE_NAME}`);
+async function readPlaylistFile(directoryPath, playlistFileName) {
+    const playlist = await readFile(`${directoryPath}/${playlistFileName}`) || '';
     const playlistLines = playlist.split('\n');
     // each line is like this: youtu.be/sDuVcyIf26U
     const playlistIds = playlistLines
         .map((line) => line.split('/')[1])
         .filter(Boolean)
     if (!playlistIds || !playlistIds.length) {
-        return;
+        return [];
     }
+    return playlistIds;
+}
+
+async function main(directoryPath) {
+    const episodesCollection = await createEpisodesCollection(directoryPath, VIDEO_FILE_RE, SHOW_NAME);
+    const playlistIds = await readPlaylistFile(directoryPath, PLAYLIST_FILE_NAME);
+
     for (const playlistId of playlistIds) {
         const episodeExists = episodesCollection.checkIfYtIdExists(playlistId);
         if (episodeExists) {

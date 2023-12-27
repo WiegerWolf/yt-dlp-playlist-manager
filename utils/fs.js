@@ -32,6 +32,6 @@ export async function readFile(filePath) {
         return data;
     } catch (err) {
         console.error(`Error reading file ${filePath}:`, err);
-        throw err;
+        return null;
     }
 }
