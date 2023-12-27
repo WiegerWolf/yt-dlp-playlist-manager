@@ -1,7 +1,7 @@
+import 'dotenv/config'
+
 import { readDir } from './utils/fs.js';
 import { FileInfo } from './utils/fileInfo.js';
-
-import 'dotenv/config'
 
 const DIRECTORYPATH = process.env.DIRECTORYPATH || './data';
 const VIDEO_FILE_RE = new RegExp(process.env.VIDEO_FILE_RE || /\.webm$/);
