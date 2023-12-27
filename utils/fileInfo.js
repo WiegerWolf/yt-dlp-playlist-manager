@@ -1,7 +1,7 @@
 const SERIES_REGEX = /\((\d+)\s*of\s*(\d+)\)/;
 
 export class FileInfo {
-    constructor({fileName, showName}) {
+    constructor({ fileName, showName }) {
         this.file_name = fileName;
         this.yt_id = this.parseYoutubeId(fileName);
         this.game_name = this.parseGameName(fileName);
@@ -31,10 +31,10 @@ export class FileInfo {
         const regex = /(?:-|–)\s*(.*?)\s*\[/;
         const match = fileName.match(regex);
         let gameName = match ? match[1] : null;
-        
+
         return gameName;
     }
-    
+
     checkIsPartOfSeries(episodeTitle) {
         // episode title example: "Still Life (2 of 2)"
         const match = episodeTitle.match(SERIES_REGEX);
@@ -63,4 +63,9 @@ export class EpisodesCollection {
     getItemsByYtId(ytId) {
         return this.items.filter((item) => item.yt_id === ytId);
     }
+
+    checkIfYtIdExists(ytId) {
+        return this.items.some((item) => item.yt_id === ytId);
+    }
+
 }

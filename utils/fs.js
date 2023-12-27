@@ -25,3 +25,13 @@ export async function readDir(directoryPath) {
     }
     return files;
 }
+
+export async function readFile(filePath) {
+    try {
+        const data = await fs.readFile(filePath, 'utf-8');
+        return data;
+    } catch (err) {
+        console.error(`Error reading file ${filePath}:`, err);
+        throw err;
+    }
+}

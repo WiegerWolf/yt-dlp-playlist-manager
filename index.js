@@ -1,24 +1,45 @@
 import 'dotenv/config'
 
-import { readDir } from './utils/fs.js';
+import { readDir, readFile } from './utils/fs.js';
 import { FileInfo, EpisodesCollection } from './utils/fileInfo.js';
 
 const DIRECTORYPATH = process.env.DIRECTORYPATH || './data';
 const VIDEO_FILE_RE = new RegExp(process.env.VIDEO_FILE_RE || /\.webm$/);
 const SHOW_NAME = process.env.SHOW_NAME || 'Ross\'s Game Dungeon';
+const PLAYLIST_FILE_NAME = process.env.PLAYLIST_FILE_NAME || 'playlist';
 
-async function main(directoryPath) {
+async function createEpisodesCollection(directoryPath, videoFileRe, showName) {
     const files = await readDir(directoryPath);
     if (!files) {
         return;
     }
     const fileInfos = files
-        .filter((fileName) => VIDEO_FILE_RE.test(fileName))
-        .map((fileName) => new FileInfo({fileName, showName: SHOW_NAME}));
-    const episodesCollection = new EpisodesCollection(fileInfos);
-    console.log(episodesCollection.getItemsByGameName('Still Life'));
+        .filter((fileName) => videoFileRe.test(fileName))
+        .map((fileName) => new FileInfo({fileName, showName}));
+    return new EpisodesCollection(fileInfos);
 }
 
+async function main(directoryPath) {
+    const episodesCollection = await createEpisodesCollection(directoryPath, VIDEO_FILE_RE, SHOW_NAME);
+    
+    const playlist = await readFile(`${directoryPath}/${PLAYLIST_FILE_NAME}`);
+    const playlistLines = playlist.split('\n');
+    // each line is like this: youtu.be/sDuVcyIf26U
+    const playlistIds = playlistLines
+        .map((line) => line.split('/')[1])
+        .filter(Boolean)
+    if (!playlistIds || !playlistIds.length) {
+        return;
+    }
+    for (const playlistId of playlistIds) {
+        const episodeExists = episodesCollection.checkIfYtIdExists(playlistId);
+        if (episodeExists) {
+            continue;
+        } else {
+            console.log(`Episode with id ${playlistId} not found.`);
+        }
+    }
+}
 
 main(DIRECTORYPATH)
     .catch((err) => console.error('Error in main:', err));
