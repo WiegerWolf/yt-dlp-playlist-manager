@@ -1,9 +1,11 @@
 import { readDir } from './utils/fs.js';
 import { FileInfo } from './utils/fileInfo.js';
 
-const DIRECTORYPATH = './data';
-const VIDEO_FILE_RE = /\.webm$/;
-const SHOW_NAME = 'Ross\'s Game Dungeon';
+import 'dotenv/config'
+
+const DIRECTORYPATH = process.env.DIRECTORYPATH || './data';
+const VIDEO_FILE_RE = new RegExp(process.env.VIDEO_FILE_RE || /\.webm$/);
+const SHOW_NAME = process.env.SHOW_NAME || 'Ross\'s Game Dungeon';
 
 async function main(directoryPath) {
     const files = await readDir(directoryPath);
