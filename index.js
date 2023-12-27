@@ -62,7 +62,7 @@ async function downloadPlaylistInfo(playlistUrl) {
     const command = `yt-dlp -J --flat-playlist ${playlistUrl}`;
     // Run the command using child_process
     const { stdout, stderr } = await execAsync(command);
-    if (stderr) {
+    if (stderr && !stdout) {
         console.error('Error downloading playlist info:', stderr);
         return null;
     }
@@ -79,17 +79,32 @@ async function downloadPlaylistInfo(playlistUrl) {
 async function processPlaylist(playlistUrl) {
     const playlistInfo = await downloadPlaylistInfo(playlistUrl);
     if (!playlistInfo || !playlistInfo.entries || !playlistInfo.entries.length) {
-        console.error('No playlist entries found.');
+        console.error(`No playlist info found for ${playlistUrl}: ${playlistInfo}`);
         return [];
     }
     const playlistEntries = playlistInfo.entries;
     return playlistEntries;
 }
 
+async function downloadEpisode(directoryPath, playlistEntry) {
+    const command = `yt-dlp`;
+    const options = {
+        cwd: directoryPath,
+    };
+    console.log(`Downloading episode ${playlistEntry.title} (${playlistEntry.id})...`);
+    const code = await spawnAsync(command, ['-S', 'res:480', playlistEntry.url], options);
+    
+    if (code !== 0) {
+        console.error(`Error downloading episode ${playlistEntry.title} (${playlistEntry.id}):`, code);
+    } else {
+        console.log(`Episode ${playlistEntry.title} (${playlistEntry.id}) downloaded.`);
+    }
+}
+
 async function main(directoryPath) {
     const episodesCollection = await createEpisodesCollection(directoryPath, VIDEO_FILE_RE, SHOW_NAME);
 
-    // read local playlist file
+    // read local playlist file to check if all episodes are downloaded
     const playlistIds = await readPlaylistFile(directoryPath, PLAYLIST_FILE_NAME);
     for (const playlistId of playlistIds) {
         const episodeExists = episodesCollection.checkIfYtIdExists(playlistId);
@@ -100,7 +115,7 @@ async function main(directoryPath) {
         }
     }
     
-    // download playlist info from youtube
+    // download playlist from youtube to get fresh list of episodes
     const playlistEntries = await processPlaylist(PLAYLIST_URL);
     for (const playlistEntry of playlistEntries) {
         const episodeExists = episodesCollection.checkIfYtIdExists(playlistEntry.id);
@@ -108,11 +123,7 @@ async function main(directoryPath) {
             continue;
         } else {
             console.log(`Episode with id ${playlistEntry.id} not found.`);
-            // download episode in 480p
-            const command = `yt-dlp -S "res:480" ${playlistEntry.url}`;
-            // Run the command using child_process in the directory where the files are
-            
-
+            await downloadEpisode(directoryPath, playlistEntry);
         }
     }
 
